@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"os"
 	"time"
@@ -57,41 +56,26 @@ func main() {
 	}
 	log.Printf("%s has been started....\n", bot.User.Username)
 
-	c.pingHosts(&storage)
+	c.pingHosts(bot)
 	updater.Idle()
 }
 
-func (c *Client) start(bot *gotgbot.Bot, ctx *ext.Context) error {
-	_, err := ctx.EffectiveMessage.Reply(
-		bot, fmt.Sprintf("Good news everyone, we have a new subscriber %s", ctx.Message.From.Username), &gotgbot.SendMessageOpts{
-			ParseMode: "HTML",
-		},
-	)
-	c.addUserToStorage(ctx.Message.From.Id)
-	c.saveToFile()
-	
-	if err != nil {
-		return fmt.Errorf("failed to send start message: %w", err)
+
+func (c *Client) pingHosts(bot *gotgbot.Bot) {
+	for key, value := range c.storage.Hosts {
+		go c.pinger(key, value, bot)
 	}
-	return nil
 }
 
-func (c *Client) stop(bot *gotgbot.Bot, ctx *ext.Context) error {
-	_, err := ctx.EffectiveMessage.Reply(
-		bot, fmt.Sprintf("Goodbye %s", ctx.Message.From.Username), &gotgbot.SendMessageOpts{
-			ParseMode: "HTML",
-		},
-	)
-	c.removeUserFromStorage(ctx.Message.From.Id)
-	c.saveToFile()
-	
-	if err != nil {
-		return fmt.Errorf("failed to send start message: %w", err)
+func (c *Client) sendMsg(msg string, bot *gotgbot.Bot) {
+	c.rwMux.Lock()
+	defer c.rwMux.Unlock()
+	for _, user_id := range c.storage.Users {
+		bot.SendMessage(user_id, msg, &gotgbot.SendMessageOpts{
+			ParseMode: "html",
+		})
+		time.Sleep(time.Second * 1)
 	}
-	return nil
-}
-
-func (c *Client) pingHosts(storage *Storage) {
 }
 
 func loadFromFile() (Storage, error) {
