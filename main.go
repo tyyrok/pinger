@@ -9,15 +9,9 @@ import (
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
-	"github.com/joho/godotenv"
 )
 
 func main() {
-	//token := os.Getenv("STATUS_BOT_TOKEN")
-	err := godotenv.Load(".env")
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
 	token := os.Getenv("BOT_TOKEN")
 	if token == "" {
 		panic("TOKEN environment variable is empty")
