@@ -13,12 +13,13 @@ func (c *Client) start(bot *gotgbot.Bot, ctx *ext.Context) error {
 			ParseMode: "HTML",
 		},
 	)
-	c.addUserToStorage(ctx.Message.From.Id)
-	c.saveToFile()
-	
 	if err != nil {
 		return fmt.Errorf("failed to send start message: %w", err)
 	}
+
+	c.addUserToStorage(ctx.Message.From.Id)
+	c.saveToFile()
+	go c.welcomeMessage(ctx.Message.From.Id, bot)
 	return nil
 }
 

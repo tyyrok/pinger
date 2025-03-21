@@ -9,16 +9,16 @@ import (
 	"github.com/PaulSonOfLars/gotgbot/v2"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext"
 	"github.com/PaulSonOfLars/gotgbot/v2/ext/handlers"
+	"github.com/joho/godotenv"
 )
-
-type Storage struct {
-	Hosts map[string]string `json:"hosts"`
-	Users []int64 `json:"users"`
-}
 
 func main() {
 	//token := os.Getenv("STATUS_BOT_TOKEN")
-	token := "7876917523:AAHS_o8wgmRh23thdQhCCoer7c48zwMiTjo"
+	err := godotenv.Load(".env")
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+	token := os.Getenv("BOT_TOKEN")
 	if token == "" {
 		panic("TOKEN environment variable is empty")
 	}
@@ -60,24 +60,6 @@ func main() {
 	updater.Idle()
 }
 
-
-func (c *Client) pingHosts(bot *gotgbot.Bot) {
-	for key, value := range c.storage.Hosts {
-		go c.pinger(key, value, bot)
-	}
-}
-
-func (c *Client) sendMsg(msg string, bot *gotgbot.Bot) {
-	c.rwMux.Lock()
-	defer c.rwMux.Unlock()
-	for _, user_id := range c.storage.Users {
-		bot.SendMessage(user_id, msg, &gotgbot.SendMessageOpts{
-			ParseMode: "html",
-		})
-		time.Sleep(time.Second * 1)
-	}
-}
-
 func loadFromFile() (Storage, error) {
 	file, err := os.Open("settings.json")
 	if err != nil {
@@ -92,15 +74,4 @@ func loadFromFile() (Storage, error) {
 	log.Printf("Found %d hosts", len(store.Hosts))
 	log.Printf("Found %d users", len(store.Users))
 	return store, nil
-}
-
-func (c *Client) saveToFile() error {
-	c.rwMux.Lock()
-	defer c.rwMux.Unlock()
-	file, err := os.Create("settings.json")
-	if err != nil {
-		panic("Failed to open file: " + err.Error())
-	}
-	defer file.Close()
-	return json.NewEncoder(file).Encode(c.storage)
 }
