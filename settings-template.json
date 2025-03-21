@@ -1,0 +1,7 @@
+{
+    "hosts": {
+        "HOST NAME": "http://example.com"
+    },
+    "users": [
+    ]
+}
