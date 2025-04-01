@@ -35,6 +35,17 @@ func main() {
 
 	dispatcher.AddHandler(handlers.NewCommand("start", c.start))
 	dispatcher.AddHandler(handlers.NewCommand("stop", c.stop))
+	dispatcher.AddHandler(handlers.NewCommand("status", c.status))
+
+	commands := []gotgbot.BotCommand{
+		{Command: "start", Description: "Subscribe to bot"},
+		{Command: "stop", Description: "Unsubscribe to bot"},
+		{Command: "status", Description: "Get instant of hosts"},
+	}
+	_, err = bot.SetMyCommands(commands, nil)
+	if err != nil {
+		log.Fatalf("Failed to add commands: %v", err)
+	}
 
 	err = updater.StartPolling(bot, &ext.PollingOpts{
 		DropPendingUpdates: true,

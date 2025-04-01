@@ -12,7 +12,7 @@ import (
 
 type Storage struct {
 	Hosts map[string]string `json:"hosts"`
-	Users []int64 `json:"users"`
+	Users map[int64]bool
 }
 
 type Client struct {
@@ -24,15 +24,14 @@ func (c *Client) addUserToStorage(user_id int64) {
 	c.rwMux.Lock()
 	defer c.rwMux.Unlock()
 	if c.storage.Users == nil {
-		c.storage.Users = []int64{user_id}
+		c.storage.Users = make(map[int64]bool)
+		c.storage.Users[user_id] = false
 		return
 	}
-	for _, elem := range c.storage.Users {
-		if elem == user_id {
-			return
-		}
+	if c.storage.Users[user_id] {
+		return
 	}
-	c.storage.Users = append(c.storage.Users, user_id)
+	c.storage.Users[user_id] = false
 	log.Printf("Subscribed user with id: %d", user_id)
 }
 
@@ -43,16 +42,7 @@ func (c *Client) removeUserFromStorage(user_id int64) {
 		log.Printf("Storage is empty can't remove user with id: %d", user_id)
 		return
 	}
-	index := -1
-	for i, elem := range c.storage.Users {
-		if elem == user_id {
-			index = i
-			break
-		}
-	}
-	if index >= 0 {
-		c.storage.Users = append(c.storage.Users[:index], c.storage.Users[index+1:]...)
-	}
+	delete(c.storage.Users, user_id)
 }
 
 func (c *Client) saveToFile() error {
@@ -74,7 +64,7 @@ func (c *Client) pingHosts(bot *gotgbot.Bot) {
 }
 
 func (c *Client) sendMessages(msg string, bot *gotgbot.Bot) {
-	for _, user_id := range c.storage.Users {
+	for user_id, _ := range c.storage.Users {
 		c.sendToUser(user_id, msg, bot)
 		time.Sleep(time.Second * 1)
 	}
@@ -98,4 +88,35 @@ func (c *Client) welcomeMessage(user_id int64, bot *gotgbot.Bot) {
 		res += fmt.Sprintf("%s\n", <- messages)
 	}
 	c.sendToUser(user_id, res, bot)
+}
+
+func (c *Client) checkUserFlooding(user_id int64) bool {
+	c.rwMux.RLock()
+	defer c.rwMux.RUnlock()
+	return c.storage.Users[user_id]
+}
+
+func (c *Client) setUserDelay(user_id int64) {
+	c.rwMux.Lock()
+	defer c.rwMux.Unlock()
+	_, ok := c.storage.Users[user_id]
+	if ok {
+		c.storage.Users[user_id] = true
+	}
+}
+
+func (c *Client) removeUserDelay(user_id int64) {
+	c.rwMux.Lock()
+	defer c.rwMux.Unlock()
+	_, ok := c.storage.Users[user_id]
+	if ok {
+		c.storage.Users[user_id] = false
+	}
+}
+
+func (c *Client) checkUserSubscribed(user_id int64) bool {
+	c.rwMux.RLock()
+	defer c.rwMux.RUnlock()
+	_, ok := c.storage.Users[user_id]
+	return ok
 }
