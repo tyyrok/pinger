@@ -17,7 +17,7 @@ A lightweight Go-based bot that monitors the availability of specified URLs and 
       "My Service": "http://example.com"
     }
   ],
-  "users": [123456789]
+  "users": {"123456789": false}
 }
 ```
 - Replace "My Service" and "http://example.com" with your actual service name and URL.
@@ -30,3 +30,4 @@ A lightweight Go-based bot that monitors the availability of specified URLs and 
 1. Start services:`./start.sh` or `docker-compose up --build -d`
 2. Subscribe to bot notifications by sending `/start` command to your bot
 3. Unsubscribe from bot sending `/stop` commnand to your bot
+4. Get instant status of added hosts by sending `/status`
