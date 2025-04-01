@@ -40,7 +40,7 @@ func main() {
 	commands := []gotgbot.BotCommand{
 		{Command: "start", Description: "Subscribe to bot"},
 		{Command: "stop", Description: "Unsubscribe to bot"},
-		{Command: "status", Description: "Get instant of hosts"},
+		{Command: "status", Description: "Get instant status of hosts"},
 	}
 	_, err = bot.SetMyCommands(commands, nil)
 	if err != nil {
