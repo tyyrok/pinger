@@ -17,7 +17,7 @@ A lightweight Go-based bot that monitors the availability of specified URLs and 
       "My Service": "http://example.com"
     }
   ],
-  "users": {"123456789": false}
+  "users": {}
 }
 ```
 - Replace "My Service" and "http://example.com" with your actual service name and URL.
